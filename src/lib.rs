@@ -1,4 +1,5 @@
 // Copyright by Owen O'Malley 2024
+
 use std::ops::Range;
 use rand_chacha::ChaChaRng;
 use rand_chacha::rand_core::SeedableRng;
