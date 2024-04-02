@@ -6,9 +6,9 @@ mod dual;
 mod dynamic;
 mod elements;
 mod option;
-mod pair;
+mod sliding;
 mod tail;
 
-criterion_group!(benches, elements::benchmark, dual::benchmark, dynamic::benchmark, tail::benchmark,
-                 pair::benchmark, option::benchmark);
+criterion_group!(benches, elements::benchmark, dual::benchmark, dynamic::benchmark,
+  tail::benchmark, sliding::benchmark, option::benchmark);
 criterion_main!(benches);
