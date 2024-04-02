@@ -20,7 +20,7 @@ source of noise.
 
 ## Usage
 
-> cargo bench <pattern>
+> cargo bench *pattern*
 
 Runs all of the benchmarks with names that contain the pattern.
 
