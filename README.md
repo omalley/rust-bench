@@ -35,14 +35,14 @@ programmers can use the high level functions without concern. The
 total variation is less than 5%. I often see a minor slow down using
 vec compared array.
 
-element index array     time:   [334.14 ns 334.62 ns 335.17 ns]
-element for array       time:   [334.34 ns 334.78 ns 335.27 ns]
-element sum array       time:   [334.11 ns 334.60 ns 335.21 ns]
-element fold array      time:   [336.04 ns 336.84 ns 337.62 ns]
-element index vec       time:   [340.57 ns 341.15 ns 341.74 ns]
-element for vec         time:   [342.58 ns 343.05 ns 343.57 ns]
-element sum vec         time:   [346.27 ns 346.65 ns 347.03 ns]
-element fold vec        time:   [345.55 ns 345.99 ns 346.40 ns]
+* element index array     time:   [334.14 ns 334.62 ns 335.17 ns]
+* element for array       time:   [334.34 ns 334.78 ns 335.27 ns]
+* element sum array       time:   [334.11 ns 334.60 ns 335.21 ns]
+* element fold array      time:   [336.04 ns 336.84 ns 337.62 ns]
+* element index vec       time:   [340.57 ns 341.15 ns 341.74 ns]
+* element for vec         time:   [342.58 ns 343.05 ns 343.57 ns]
+* element sum vec         time:   [346.27 ns 346.65 ns 347.03 ns]
+* element fold vec        time:   [345.55 ns 345.99 ns 346.40 ns]
 
 ## Sliding windows
 
@@ -50,8 +50,8 @@ This category tests the performance of window relative to a loop.
 
 **TL/DR:** There is basically no difference here.
 
-sliding window          time:   [692.19 ns 693.76 ns 695.81 ns]
-sliding for             time:   [698.90 ns 699.69 ns 700.50 ns]
+* sliding window          time:   [692.19 ns 693.76 ns 695.81 ns]
+* sliding for             time:   [698.90 ns 699.69 ns 700.50 ns]
 
 ## Pair access
 
@@ -59,8 +59,8 @@ This category tests the performance of zip relative to a loop.
 
 **TL/DR:** There is basically no difference here.
 
-dual zip                time:   [537.16 ns 537.80 ns 538.49 ns]
-dual for                time:   [539.97 ns 540.98 ns 542.07 ns]
+* dual zip                time:   [537.16 ns 537.80 ns 538.49 ns]
+* dual for                time:   [539.97 ns 540.98 ns 542.07 ns]
 
 ## Tail recursion
 
@@ -86,12 +86,12 @@ I don't see any performance change by adding tailcall and some cases
 it doesn't accept (eg. tail::sum_via_if) are recognized by the
 compiler.
 
-tail match              time:   [52.022 µs 52.132 µs 52.248 µs]
-tail match accum        time:   [3.0251 µs 3.0368 µs 3.0476 µs]
-tail match2 accum       time:   [344.87 ns 345.50 ns 346.18 ns]
-tail len match accum    time:   [3.0406 µs 3.0504 µs 3.0597 µs]
-tail if idx accum       time:   [346.24 ns 346.83 ns 347.45 ns]
-tail if accum           time:   [350.67 ns 351.20 ns 351.69 ns]
-tail if accum           time:   [350.67 ns 351.20 ns 351.69 ns]
+* tail match              time:   [52.022 µs 52.132 µs 52.248 µs]
+* tail match accum        time:   [3.0251 µs 3.0368 µs 3.0476 µs]
+* tail match2 accum       time:   [344.87 ns 345.50 ns 346.18 ns]
+* tail len match accum    time:   [3.0406 µs 3.0504 µs 3.0597 µs]
+* tail if idx accum       time:   [346.24 ns 346.83 ns 347.45 ns]
+* tail if accum           time:   [350.67 ns 351.20 ns 351.69 ns]
+* tail if                 time:   [345.83 ns 346.36 ns 346.90 ns]
 
 
