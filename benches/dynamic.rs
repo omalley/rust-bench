@@ -141,7 +141,7 @@ fn dynamic_objs(data: &[i32], objs: &[Box<dyn Processor>]) -> Result<i32,String>
 }
 
 pub fn benchmark(c: &mut Criterion) {
-  let array: [i32; 10_000] = rust_bench::random_array(0..10);
+  let array: [i32; 10_000] = rust_bench::random_array(0..10, 0);
   let funcs: [fn() -> i32; 10] = [|| 1, || 2, || 3, || 5, || 7, || 11, || 13, || 17, || 19, || 23];
   let map = HashMap::from([(0,1), (1, 2), (2, 3), (3, 5), (4, 7), (5, 11),
     (6, 13), (7, 17), (8, 19), (9, 23)]);

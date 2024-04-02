@@ -39,7 +39,7 @@ fn option_map_or(data: &[Option<String>]) -> usize {
 }
 
 pub fn benchmark(c: &mut Criterion) {
-  let array: [Option<String>; 100] = rust_bench::random_string_array();
+  let array: [Option<String>; 10_000] = rust_bench::random_string_array(0);
   c.bench_function("option sum", |b| b.iter(|| option_sum(black_box(&array))));
   c.bench_function("option idx", |b| b.iter(|| option_idx(black_box(&array))));
   c.bench_function("option match", |b| b.iter(|| option_match(black_box(&array))));

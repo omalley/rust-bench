@@ -51,7 +51,7 @@ fn sum_via_if(data: &[i32]) -> i32 {
 }
 
 pub fn benchmark(c: &mut Criterion) {
-  let array: [i32; 10_000] = rust_bench::random_array(-100_000..100_000);
+  let array: [i32; 10_000] = rust_bench::random_array(-100_000..100_000, 0);
   c.bench_function("tail match", |b| b.iter(|| sum_via_match(black_box(&array))));
   c.bench_function("tail match accum", |b| b.iter(|| sum_via_match_accum(black_box(&array), 0)));
   c.bench_function("tail len match accum", |b| b.iter(|| sum_via_len_match_accum(black_box(&array), 0)));

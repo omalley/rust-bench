@@ -27,7 +27,7 @@ fn sum_via_fold(data: &[i32]) -> i32 {
 }
 
 pub fn benchmark(c: &mut Criterion) {
-  let array: [i32; 10_000] = rust_bench::random_array(-100_000..100_000);
+  let array: [i32; 10_000] = rust_bench::random_array(-100_000..100_000, 0);
   let vec = array.to_vec();
   c.bench_function("element index array", |b| b.iter(|| sum_via_index(black_box(&array))));
   c.bench_function("element for array", |b| b.iter(|| sum_via_for(black_box(&array))));

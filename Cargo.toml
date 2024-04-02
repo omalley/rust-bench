@@ -10,6 +10,7 @@ criterion = { version = "0.5", features = ["html_reports"] }
 
 [dependencies]
 rand = "0.8"
+rand_chacha = "0.3"
 
 [[bench]]
 name = "bench"

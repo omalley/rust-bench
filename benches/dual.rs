@@ -25,7 +25,7 @@ fn dual_via_tail(left: &[i32], right: &[i32], previous: i32) -> i32 {
 }
 
 pub fn benchmark(c: &mut Criterion) {
-  let array: [i32; 10_000] = rust_bench::random_array(-100_000..100_000);
+  let array: [i32; 10_000] = rust_bench::random_array(-100_000..100_000, 0);
   c.bench_function("dual zip", |b| b.iter(|| dual_via_zip(black_box(&array), black_box(&array))));
   c.bench_function("dual index", |b| b.iter(|| dual_via_index(black_box(&array), black_box(&array))));
   c.bench_function("dual tail", |b| b.iter(|| dual_via_tail(black_box(&array), black_box(&array), 0)));

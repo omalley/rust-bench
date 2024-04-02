@@ -15,7 +15,7 @@ fn compute_idx(data: &[i32]) -> i32 {
 }
 
 pub fn benchmark(c: &mut Criterion) {
-  let array: [i32; 10_000] = rust_bench::random_array(-100_000..100_000);
+  let array: [i32; 10_000] = rust_bench::random_array(-100_000..100_000, 0);
   c.bench_function("pair window", |b| b.iter(|| compute_window(black_box(&array))));
   c.bench_function("pair idx", |b| b.iter(|| compute_idx(black_box(&array))));
 }
