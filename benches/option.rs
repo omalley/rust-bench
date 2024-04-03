@@ -2,10 +2,19 @@
 
 use criterion::{black_box, Criterion};
 
+// Compare the various ways to handle Option values.
+
+// These functions take a slice of Option<String> and compute the
+// sum of the lengths of the String values.
+
+/// Iterate through the data, apply filter_map to drop the None values
+/// and keep the string lengths. Finally sum is applied.
 fn filter_map(data: &[Option<String>]) -> usize {
-  data.iter().filter_map(|x| x.as_ref().and_then(|s| Some(s.len()))).sum()
+  data.iter().filter_map(|x|
+     x.as_ref().and_then(|s| Some(s.len()))).sum()
 }
 
+/// A for loop and if to test whether it is a String.
 fn for_if(data: &[Option<String>]) -> usize {
   let mut result = 0;
   for x in data {
@@ -16,6 +25,7 @@ fn for_if(data: &[Option<String>]) -> usize {
   result
 }
 
+/// As above, but with if let to find the Strings.
 fn for_if_let(data: &[Option<String>]) -> usize {
   let mut result = 0;
   for x in data {
@@ -26,17 +36,19 @@ fn for_if_let(data: &[Option<String>]) -> usize {
   result
 }
 
+/// A for loop with a match the looks for the strings.
 fn for_match(data: &[Option<String>]) -> usize {
   let mut result = 0;
   for x in data {
-    result += match x {
-      Some(s) => s.len(),
-      _ => 0,
+    match x {
+      Some(s) => result += s.len(),
+      _ => {},
     }
   }
   result
 }
 
+/// Iteration, a match to find the Strings, and a sum.
 fn match_sum(data: &[Option<String>]) -> usize {
   data.iter().map(|x| match x {
     Some(s) => s.len(),
@@ -44,8 +56,11 @@ fn match_sum(data: &[Option<String>]) -> usize {
   }).sum()
 }
 
+/// Uses Option.map_or that uses a default value if it is None
+/// or applies a lambda when it is a String.
 fn map_or(data: &[Option<String>]) -> usize {
-  data.iter().map(|x| x.as_ref().map_or(0, |s| s.len())).sum()
+  data.iter().map(|x| 
+    x.as_ref().map_or(0, |s| s.len())).sum()
 }
 
 pub fn benchmark(c: &mut Criterion) {
