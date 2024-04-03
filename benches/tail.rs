@@ -3,7 +3,11 @@
 use criterion::{black_box, Criterion};
 use tailcall::tailcall;
 
-// tailcall rejects this.
+// Study how the compiler deals with tail recursion with
+// functions that compute the sum of the array.
+
+/// Match against the slices and recurse with a final addition.
+// tailcall rejects this because of the final addition.
 fn sum_via_match(data: &[i32]) -> i32 {
   match data {
     [] => 0,
@@ -12,6 +16,8 @@ fn sum_via_match(data: &[i32]) -> i32 {
   }
 }
 
+/// Match against the slices with an accumulator to avoid the final
+/// addition.
 #[tailcall]
 fn sum_via_match_accum(data: &[i32], previous: i32) -> i32 {
   match data {
@@ -21,6 +27,9 @@ fn sum_via_match_accum(data: &[i32], previous: i32) -> i32 {
   }
 }
 
+/// Same as the previous, but with only two match branches. The
+/// middle pattern is handled as a special case of the final 
+/// pattern. This is significantly faster.
 #[tailcall]
 fn sum_via_match2_accum(data: &[i32], previous: i32) -> i32 {
   match data {
@@ -29,6 +38,7 @@ fn sum_via_match2_accum(data: &[i32], previous: i32) -> i32 {
   }
 }
 
+/// Match on the length of the data rather than the front of the slice.
 #[tailcall]
 fn sum_via_len_match_accum(data: &[i32], previous: i32) -> i32 {
   match data.len() {
@@ -38,6 +48,8 @@ fn sum_via_len_match_accum(data: &[i32], previous: i32) -> i32 {
   }
 }
 
+/// Take the manual approach of passing in the start index and an
+/// accumulator.
 #[tailcall]
 fn sum_via_if_idx_accum(data: &[i32], i: usize, previous: i32) -> i32 {
   if i < data.len() {
@@ -47,6 +59,7 @@ fn sum_via_if_idx_accum(data: &[i32], i: usize, previous: i32) -> i32 {
   }
 }
 
+/// Use an if instead of the match and use an accumulator.
 #[tailcall]
 fn sum_via_if_accum(data: &[i32], previous: i32) -> i32 {
   if data.is_empty() {
@@ -56,6 +69,7 @@ fn sum_via_if_accum(data: &[i32], previous: i32) -> i32 {
   }
 }
 
+/// Finally, use an if branch without the accumulator.
 // tailcall rejects this.
 fn sum_via_if(data: &[i32]) -> i32 {
   if data.is_empty() {

@@ -2,6 +2,12 @@
 
 use criterion::{black_box, Criterion};
 
+// This group tests the relative performance of loops,
+// iterators, arrays, and vectors.
+
+// All of the functions compute the sum of the data.
+
+/// Use a for loop via indexing
 fn sum_via_index(data: &[i32]) -> i32 {
   let mut sum = 0;
   for i in 0..data.len() {
@@ -10,6 +16,7 @@ fn sum_via_index(data: &[i32]) -> i32 {
   sum
 }
 
+/// A for loop over the data directly
 fn sum_via_for(data: &[i32]) -> i32 {
   let mut sum = 0;
   for i in data {
@@ -18,10 +25,12 @@ fn sum_via_for(data: &[i32]) -> i32 {
   sum
 }
 
+/// iterate and use sum.
 fn sum_via_sum(data: &[i32]) -> i32 {
   data.iter().sum()
 }
 
+/// Iterate and use fold.
 fn sum_via_fold(data: &[i32]) -> i32 {
   data.iter().fold(0, |acc, i| acc + i)
 }

@@ -3,6 +3,12 @@
 use std::collections::HashMap;
 use criterion::{black_box, Criterion};
 
+// Benchmark the different forms of branching and lookup.
+// All of the functions map each number to a new value
+// and sum the results.
+
+/// Iterate through the data, translating the number, and 
+/// propagating errors back to the caller.
 fn iter_match_result(data: &[i32]) -> Result<i32,String> {
   data.iter().map(|v| match *v {
     0 => Ok(1),
@@ -19,6 +25,8 @@ fn iter_match_result(data: &[i32]) -> Result<i32,String> {
   }).sum()
 }
 
+/// As above, but panic instead of an error if the data is out
+/// of range.
 fn iter_match(data: &[i32]) -> i32 {
   data.iter().map(|v| match *v {
     0 => 1,
@@ -35,6 +43,7 @@ fn iter_match(data: &[i32]) -> i32 {
   }).sum()
 }
 
+/// Use a for loop to access the data.
 fn for_match(data: &[i32]) -> i32 {
   let mut result = 0;
   for v in data {
@@ -55,7 +64,8 @@ fn for_match(data: &[i32]) -> i32 {
   result
 }
 
-
+/// Iterate through the data and convert each number using
+/// if then else.
 fn iter_if(data: &[i32]) -> i32 {
   data.iter().map(|v| {
     if *v == 0 {
@@ -83,6 +93,7 @@ fn iter_if(data: &[i32]) -> i32 {
     }}).sum()
 }
 
+/// Use a for loop and if statements.
 fn for_if(data: &[i32]) -> i32 {
   let mut result = 0;
   for v in data {
@@ -113,10 +124,12 @@ fn for_if(data: &[i32]) -> i32 {
   result
 }
 
+/// Iterate and use an array to do the translation.
 fn lookup_array(data: &[i32], map: &[i32]) -> i32 {
   data.iter().map(|v| map[*v as usize]).sum()
 }
 
+/// Iterate and use a hash map to do the translation.
 fn lookup_hashmap(data: &[i32], map: &HashMap<i32,i32>) -> i32 {
   data.iter().map(|v| map.get(v).expect("bad digit")).sum()
 }

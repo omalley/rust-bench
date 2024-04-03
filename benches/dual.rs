@@ -2,12 +2,17 @@
 
 use criterion::{black_box, Criterion};
 
+// Compare zip and for loops. The functions multiply the values
+// and sum the products.
+
+/// Use iteration, zip, map, and sum.
 fn dual_via_zip(left: &[i32], right: &[i32]) -> i32 {
   left.iter().zip(right.iter())
       .map(|(l,r)| l * r)
       .sum()
 }
 
+/// Use the manual for loop.
 fn dual_via_for(left: &[i32], right: &[i32]) -> i32 {
   let mut result = 0;
   for i in 0..left.len() {
