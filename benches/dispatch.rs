@@ -77,6 +77,20 @@ define_struct!(Processor6, 13);
 define_struct!(Processor7, 17);
 define_struct!(Processor8, 19);
 define_struct!(Processor9, 23);
+define_struct!(Processor10, 25);
+define_struct!(Processor11, 27);
+define_struct!(Processor12, 29);
+define_struct!(Processor13, 31);
+define_struct!(Processor14, 33);
+define_struct!(Processor15, 35);
+define_struct!(Processor16, 37);
+define_struct!(Processor17, 39);
+define_struct!(Processor18, 41);
+define_struct!(Processor19, 43);
+define_struct!(Processor20, 45);
+define_struct!(Processor21, 47);
+define_struct!(Processor22, 49);
+define_struct!(Processor23, 51);
 
 fn processor_from_i32(i: i32) -> Box<dyn Processor> {
   match i {
@@ -90,6 +104,20 @@ fn processor_from_i32(i: i32) -> Box<dyn Processor> {
     7 => Box::new(Processor7::default()) as Box<dyn Processor>,
     8 => Box::new(Processor8::default()) as Box<dyn Processor>,
     9 => Box::new(Processor9::default()) as Box<dyn Processor>,
+    10 => Box::new(Processor10::default()) as Box<dyn Processor>,
+    11 => Box::new(Processor11::default()) as Box<dyn Processor>,
+    12 => Box::new(Processor12::default()) as Box<dyn Processor>,
+    13 => Box::new(Processor13::default()) as Box<dyn Processor>,
+    14 => Box::new(Processor14::default()) as Box<dyn Processor>,
+    15 => Box::new(Processor15::default()) as Box<dyn Processor>,
+    16 => Box::new(Processor16::default()) as Box<dyn Processor>,
+    17 => Box::new(Processor17::default()) as Box<dyn Processor>,
+    18 => Box::new(Processor18::default()) as Box<dyn Processor>,
+    19 => Box::new(Processor19::default()) as Box<dyn Processor>,
+    20 => Box::new(Processor20::default()) as Box<dyn Processor>,
+    21 => Box::new(Processor21::default()) as Box<dyn Processor>,
+    22 => Box::new(Processor22::default()) as Box<dyn Processor>,
+    23 => Box::new(Processor23::default()) as Box<dyn Processor>,
     _ => panic!("Bad digit {i}"),
   }
 }
@@ -139,11 +167,11 @@ pub fn benchmark(c: &mut Criterion) {
   c.bench_function("dispatch iter objs", |b| b.iter(|| iter_objs(black_box(&objs))));
   c.bench_function("dispatch iter varied objs", |b| b.iter(|| iter_objs(black_box(&varied_objs))));
   c.bench_function("dispatch iter enums", |b| b.iter(|| iter_enums(black_box(&enums))));
-  for limit in 0..10 {
+  let array: [i32; 10_000] = rust_bench::random_array(0..24, 0);
+  for limit in 1..=24 {
     let tmp_objs = array
-        .map(|x| if x < limit { processor_from_i32(x)}
-        else { Box::new(ProcessorImpl{x}) as Box<dyn Processor>});
-    c.bench_function(format!("dispatch varied {}", limit + 1).as_str(),
+        .map(|x| processor_from_i32(x % limit));
+    c.bench_function(format!("dispatch varied {}", limit).as_str(),
                      |b| b.iter(|| iter_objs(black_box(&tmp_objs))));
   }
 }
