@@ -139,4 +139,11 @@ pub fn benchmark(c: &mut Criterion) {
   c.bench_function("dispatch iter objs", |b| b.iter(|| iter_objs(black_box(&objs))));
   c.bench_function("dispatch iter varied objs", |b| b.iter(|| iter_objs(black_box(&varied_objs))));
   c.bench_function("dispatch iter enums", |b| b.iter(|| iter_enums(black_box(&enums))));
+  for limit in 0..10 {
+    let tmp_objs = array
+        .map(|x| if x < limit { processor_from_i32(x)}
+        else { Box::new(ProcessorImpl{x}) as Box<dyn Processor>});
+    c.bench_function(format!("dispatch varied {}", limit + 1).as_str(),
+                     |b| b.iter(|| iter_objs(black_box(&tmp_objs))));
+  }
 }

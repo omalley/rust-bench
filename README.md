@@ -155,4 +155,15 @@ Using a template for a passed in function is roughly 2.5x faster.
   * dispatch iter objs      time:   [8.3290 µs 8.3660 µs 8.4117 µs]
   * dispatch iter enums     time:   [2.7632 µs 2.7706 µs 2.7785 µs]
 
-
+| Distinct classes | Microseconds |
+| ---------------- | ------------ |
+| 1                | 8.4          |
+| 2                | 15.4         |
+| 3                | 19.9         |
+| 4                | 27.0         |
+| 5                | 35.8         |
+| 6                | 41.9         |
+| 7                | 49.4         |
+| 8                | 53.5         |
+| 9                | 57.1         |
+| 10               | 57.9         |
