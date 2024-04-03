@@ -138,16 +138,21 @@ up in an array is 8% faster than using match.
 
 This category test differnt forms of dispatching.
 
-**TL/DR:** Using a template for a passed in function is roughly 2.5x
-faster. Dynamic dispatch through traits is 7x faster than lambdas.
-Using a member function on an enum is 3x faster than dynamic dispatch.
+**TL/DR:** Lambdas and dynamic dispatch are similar and both are very
+sensitive to the number of called functions (eg. 1 function = 8
+microseconds, 10 functions = 57 microseconds). Using a member function
+on an enum is by far the fastest.
+
+Using a template for a passed in function is roughly 2.5x faster.
 
 * single
+  * dispatch lambda         time:   [8.2992 µs 8.3237 µs 8.3515 µs]
   * dispatch func           time:   [8.2092 µs 8.2260 µs 8.2435 µs]
   * dispatch func template  time:   [3.0777 µs 3.0827 µs 3.0882 µs]
 * multiple
-  * dispatch lambdas        time:   [57.953 µs 58.084 µs 58.227 µs]
-  * dispatch iter objs      time:   [8.2814 µs 8.3071 µs 8.3319 µs]
-  * dispatch iter enums     time:   [2.7508 µs 2.7563 µs 2.7618 µs]
+  * dispatch lambdas        time:   [56.898 µs 57.062 µs 57.252 µs]
+  * dispatch iter varied objs       time:   [57.820 µs 57.938 µs 58.061 µs]
+  * dispatch iter objs      time:   [8.3290 µs 8.3660 µs 8.4117 µs]
+  * dispatch iter enums     time:   [2.7632 µs 2.7706 µs 2.7785 µs]
 
 
