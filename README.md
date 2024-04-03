@@ -155,15 +155,33 @@ Using a template for a passed in function is roughly 2.5x faster.
   * dispatch iter objs      time:   [8.3290 µs 8.3660 µs 8.4117 µs]
   * dispatch iter enums     time:   [2.7632 µs 2.7706 µs 2.7785 µs]
 
+So if the number of classes in the list controls the performance, so radically,
+I wondered what the curve looked like as you add more classes. With 24 classes
+and using % to get a relatively flat distribution, I get.
+
 | Distinct classes | Microseconds |
 | ---------------- | ------------ |
-| 1                | 8.4          |
-| 2                | 15.4         |
-| 3                | 19.9         |
-| 4                | 27.0         |
-| 5                | 35.8         |
-| 6                | 41.9         |
-| 7                | 49.4         |
-| 8                | 53.5         |
-| 9                | 57.1         |
-| 10               | 57.9         |
+| 1                | 8            |
+| 2                | 39           |
+| 3                | 47           |
+| 4                | 52           |
+| 5                | 54           |
+| 6                | 55           |
+| 7                | 57           |
+| 8                | 58           |
+| 9                | 59           |
+| 10               | 59           |
+| 11               | 58           |
+| 12               | 59           |
+| 13               | 59           |
+| 14               | 59           |
+| 15               | 59           |
+| 16               | 59           |
+| 17               | 58           |
+| 18               | 58           |
+| 19               | 60           |
+| 20               | 61           |
+| 21               | 61           |
+| 22               | 60           |
+| 23               | 61           |
+| 24               | 61           |
