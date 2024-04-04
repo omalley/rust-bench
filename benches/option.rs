@@ -36,7 +36,7 @@ fn for_if_let(data: &[Option<String>]) -> usize {
   result
 }
 
-/// A for loop with a match the looks for the strings.
+/// A for loop with match to find strings.
 fn for_match(data: &[Option<String>]) -> usize {
   let mut result = 0;
   for x in data {
@@ -48,7 +48,7 @@ fn for_match(data: &[Option<String>]) -> usize {
   result
 }
 
-/// Iteration, a match to find the Strings, and a sum.
+/// Iteration, match to find the Strings, and sum.
 fn match_sum(data: &[Option<String>]) -> usize {
   data.iter().map(|x| match x {
     Some(s) => s.len(),
@@ -56,8 +56,8 @@ fn match_sum(data: &[Option<String>]) -> usize {
   }).sum()
 }
 
-/// Uses Option.map_or that uses a default value if it is None
-/// or applies a lambda when it is a String.
+/// Uses Option.map_or, which provides a default value if the input is None
+/// or applies a lambda when it has a value.
 fn map_or(data: &[Option<String>]) -> usize {
   data.iter().map(|x| 
     x.as_ref().map_or(0, |s| s.len())).sum()

@@ -2,11 +2,9 @@
 
 use criterion::{black_box, Criterion};
 use num_derive::FromPrimitive;
+use paste::paste;
 
-fn iter_lambdas(data: &[i32], funcs: &[fn() -> i32]) -> i32 {
-  data.iter().map(|v| funcs[*v as usize]()).sum()
-}
-
+/// A utility function to translate the digits via a match
 fn map_digit(v: i32) -> i32 {
   match v {
     0 => 1,
@@ -23,105 +21,76 @@ fn map_digit(v: i32) -> i32 {
   }
 }
 
+/// Use a passed in function to translate
 fn iter_func(data: &[i32], func: fn(i32) -> i32) -> i32 {
   data.iter().map(|v| func(*v)).sum()
 }
 
+/// Use templates to remove the function dispatch costs.
 fn iter_func_template<F>(data: &[i32], func: F) -> i32
   where F: Fn(i32) -> i32 {
   data.iter().map(|v| func(*v)).sum()
+}
+
+/// Iterate and dispatch via an array of lambdas.
+fn iter_lambdas(data: &[i32], funcs: &[fn() -> i32]) -> i32 {
+  data.iter().map(|v| funcs[*v as usize]()).sum()
 }
 
 trait Processor {
   fn process(&self) -> i32;
 }
 
+/// Define a class that implements the trait and can
+/// handle all the inputs.
 #[derive(Debug)]
-struct ProcessorImpl {
+struct GeneralProcessor {
   x: i32,
 }
 
-impl ProcessorImpl {
+impl GeneralProcessor {
   fn from(i: i32) -> Self {
-    ProcessorImpl{x: map_digit(i)}
+    GeneralProcessor {x: map_digit(i)}
   }
 }
-impl Processor for ProcessorImpl {
+
+impl Processor for GeneralProcessor {
   fn process(&self) -> i32 {
     self.x
   }
 }
 
-macro_rules! define_struct {
-    ( $name:ident, $value:literal) => {
-        #[derive(Default)]
-        struct $name {
-          // nothing
-        }
+macro_rules! define_structs {
+    ( $({$name:literal, $value:literal}),* ) => {
+      paste!{
+        $(struct [<Processor $name>] {
+            // nothing
+          }
 
-        impl Processor for $name {
-          fn process(&self) -> i32 {
-            $value
+          impl Processor for [<Processor $name>] {
+            fn process(&self) -> i32 {
+              $value
+            }
+        })*
+
+        fn processor_from_i32(i: i32) -> Box<dyn Processor> {
+          match i {
+            $($name => Box::new([<Processor $name>]{}) as Box<dyn Processor>,)*
+            _ => panic!("Bad name {i}"),
           }
         }
+      }
     }
 }
 
-define_struct!(Processor0, 1);
-define_struct!(Processor1, 2);
-define_struct!(Processor2, 3);
-define_struct!(Processor3, 5);
-define_struct!(Processor4, 7);
-define_struct!(Processor5, 11);
-define_struct!(Processor6, 13);
-define_struct!(Processor7, 17);
-define_struct!(Processor8, 19);
-define_struct!(Processor9, 23);
-define_struct!(Processor10, 25);
-define_struct!(Processor11, 27);
-define_struct!(Processor12, 29);
-define_struct!(Processor13, 31);
-define_struct!(Processor14, 33);
-define_struct!(Processor15, 35);
-define_struct!(Processor16, 37);
-define_struct!(Processor17, 39);
-define_struct!(Processor18, 41);
-define_struct!(Processor19, 43);
-define_struct!(Processor20, 45);
-define_struct!(Processor21, 47);
-define_struct!(Processor22, 49);
-define_struct!(Processor23, 51);
+/// Define Processor0 to Processor23 using a macro.
+define_structs!({0, 1}, {1, 2}, {2, 3}, {3, 5},
+  {4, 7}, {5, 11}, {6, 13}, {7, 17}, {8, 19},
+  {9, 23}, {10, 25}, {11, 27}, {12, 29}, {13, 31},
+  {14, 33}, {15, 35}, {16, 37}, {17, 39}, {18, 41},
+  {19, 43}, {20, 45}, {21, 47}, {22, 49}, {23, 51});
 
-fn processor_from_i32(i: i32) -> Box<dyn Processor> {
-  match i {
-    0 => Box::new(Processor0::default()) as Box<dyn Processor>,
-    1 => Box::new(Processor1::default()) as Box<dyn Processor>,
-    2 => Box::new(Processor2::default()) as Box<dyn Processor>,
-    3 => Box::new(Processor3::default()) as Box<dyn Processor>,
-    4 => Box::new(Processor4::default()) as Box<dyn Processor>,
-    5 => Box::new(Processor5::default()) as Box<dyn Processor>,
-    6 => Box::new(Processor6::default()) as Box<dyn Processor>,
-    7 => Box::new(Processor7::default()) as Box<dyn Processor>,
-    8 => Box::new(Processor8::default()) as Box<dyn Processor>,
-    9 => Box::new(Processor9::default()) as Box<dyn Processor>,
-    10 => Box::new(Processor10::default()) as Box<dyn Processor>,
-    11 => Box::new(Processor11::default()) as Box<dyn Processor>,
-    12 => Box::new(Processor12::default()) as Box<dyn Processor>,
-    13 => Box::new(Processor13::default()) as Box<dyn Processor>,
-    14 => Box::new(Processor14::default()) as Box<dyn Processor>,
-    15 => Box::new(Processor15::default()) as Box<dyn Processor>,
-    16 => Box::new(Processor16::default()) as Box<dyn Processor>,
-    17 => Box::new(Processor17::default()) as Box<dyn Processor>,
-    18 => Box::new(Processor18::default()) as Box<dyn Processor>,
-    19 => Box::new(Processor19::default()) as Box<dyn Processor>,
-    20 => Box::new(Processor20::default()) as Box<dyn Processor>,
-    21 => Box::new(Processor21::default()) as Box<dyn Processor>,
-    22 => Box::new(Processor22::default()) as Box<dyn Processor>,
-    23 => Box::new(Processor23::default()) as Box<dyn Processor>,
-    _ => panic!("Bad digit {i}"),
-  }
-}
-
+/// Use virtual dispatch through the trait.
 fn iter_objs(data: &[Box<dyn Processor>]) -> i32 {
   data.iter().map(|v| v.process()).sum()
 }
@@ -148,6 +117,7 @@ impl ProcessorEnum {
   }
 }
 
+/// Test the speed going through using an enum non-virtual method.
 fn iter_enums(data: &[ProcessorEnum]) -> i32 {
   data.iter().map(|x| x.process()).sum()
 }
@@ -156,22 +126,22 @@ pub fn benchmark(c: &mut Criterion) {
   let array: [i32; 10_000] = rust_bench::random_array(0..10, 0);
   let lambdas: [fn() -> i32; 10] = [|| 1, || 2, || 3, || 5, || 7, || 11, || 13, || 17, || 19, || 23];
   let objs = array
-      .map(|x| Box::new(ProcessorImpl::from(x)) as Box<dyn Processor>);
-  let varied_objs = array.map(|x| processor_from_i32(x));
+      .map(|x| Box::new(GeneralProcessor::from(x)) as Box<dyn Processor>);
   let enums = array
       .map(|x| num_traits::FromPrimitive::from_i32(x).expect("bad digit"));
-  c.bench_function("dispatch lambdas", |b| b.iter(|| iter_lambdas(black_box(&array), black_box(&lambdas))));
   c.bench_function("dispatch lambda", |b| b.iter(|| iter_func(black_box(&array), black_box(|i| map_digit(i)))));
   c.bench_function("dispatch func", |b| b.iter(|| iter_func(black_box(&array), black_box(map_digit))));
   c.bench_function("dispatch func template", |b| b.iter(|| iter_func_template(black_box(&array), black_box(map_digit))));
+  c.bench_function("dispatch lambdas", |b| b.iter(|| iter_lambdas(black_box(&array), black_box(&lambdas))));
   c.bench_function("dispatch iter objs", |b| b.iter(|| iter_objs(black_box(&objs))));
-  c.bench_function("dispatch iter varied objs", |b| b.iter(|| iter_objs(black_box(&varied_objs))));
   c.bench_function("dispatch iter enums", |b| b.iter(|| iter_enums(black_box(&enums))));
-  let array: [i32; 10_000] = rust_bench::random_array(0..24, 0);
-  for limit in 1..=24 {
+  // Generate 10,000 values with a wider range.
+  let array: [i32; 10_000] = rust_bench::random_array(0..100_000, 0);
+  for number_of_classes in 1..=24 {
+    // Create an array with the right number of classes.
     let tmp_objs = array
-        .map(|x| processor_from_i32(x % limit));
-    c.bench_function(format!("dispatch varied {}", limit).as_str(),
+        .map(|x| processor_from_i32(x % number_of_classes));
+    c.bench_function(format!("dispatch varied {}", number_of_classes).as_str(),
                      |b| b.iter(|| iter_objs(black_box(&tmp_objs))));
   }
 }

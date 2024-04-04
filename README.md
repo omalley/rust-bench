@@ -155,9 +155,10 @@ Using a template for a passed in function is roughly 2.5x faster.
   * dispatch iter objs      time:   [8.3290 µs 8.3660 µs 8.4117 µs]
   * dispatch iter enums     time:   [2.7632 µs 2.7706 µs 2.7785 µs]
 
-So if the number of classes in the list controls the performance, so radically,
-I wondered what the curve looked like as you add more classes. With 24 classes
-and using % to get a relatively flat distribution, I get.
+Since the number of classes in the list controls the performance, so radically,
+I wondered what the curve looked like as you add more classes. I defined 24
+classes (using Rust's macros) and tested the same function with different numbers
+of distinct classes.
 
 | Distinct classes | Microseconds |
 | ---------------- | ------------ |
