@@ -145,16 +145,6 @@ on an enum is by far the fastest.
 
 Using a template for a passed in function is roughly 2.5x faster.
 
-* single
-  * dispatch lambda         time:   [8.2992 µs 8.3237 µs 8.3515 µs]
-  * dispatch func           time:   [8.2092 µs 8.2260 µs 8.2435 µs]
-  * dispatch func template  time:   [3.0777 µs 3.0827 µs 3.0882 µs]
-* multiple
-  * dispatch lambdas        time:   [56.898 µs 57.062 µs 57.252 µs]
-  * dispatch iter varied objs       time:   [57.820 µs 57.938 µs 58.061 µs]
-  * dispatch iter objs      time:   [8.3290 µs 8.3660 µs 8.4117 µs]
-  * dispatch iter enums     time:   [2.7632 µs 2.7706 µs 2.7785 µs]
-
 Since the number of classes in the list controls the performance, so radically,
 I wondered what the curve looked like as you add more classes. I defined 24
 classes (using Rust's macros) and tested the same function with different numbers
@@ -174,3 +164,14 @@ of distinct classes.
 | 19, 22           | 60           |
 | 20, 21, 23, 24   | 61           |
 
+On the other hand, sorting the data results in 24 classes
+running in 8.6 microseconds.
+
+* single
+  * dispatch lambda         time:   [8.2992 µs 8.3237 µs 8.3515 µs]
+  * dispatch func           time:   [8.2092 µs 8.2260 µs 8.2435 µs]
+  * dispatch func template  time:   [3.0777 µs 3.0827 µs 3.0882 µs]
+* multiple
+  * dispatch lambdas        time:   [56.898 µs 57.062 µs 57.252 µs]
+  * dispatch iter objs      time:   [8.3290 µs 8.3660 µs 8.4117 µs]
+  * dispatch iter enums     time:   [2.7632 µs 2.7706 µs 2.7785 µs]
