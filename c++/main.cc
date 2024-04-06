@@ -139,6 +139,18 @@ std::unique_ptr<Processor> create(int i) {
   return std::unique_ptr<Processor>();
 }
 
+std::vector<std::unique_ptr<Processor> > generate_data(int num_classes, bool random) {
+  std::vector<std::unique_ptr<Processor>> result;
+  for(int i=0; i < 10000; ++i) { 
+    result.push_back(create(i % num_classes));
+  }
+  if (random) {
+    auto rng = std::default_random_engine {};
+    std::shuffle(std::begin(result), std::end(result), rng);
+  }
+  return result;
+}
+
 int sum(std::vector<std::unique_ptr<Processor> > &data) {
   int result = 0;
   for(const std::unique_ptr<Processor>& item: data) {
@@ -147,111 +159,64 @@ int sum(std::vector<std::unique_ptr<Processor> > &data) {
   return result;
 }
 
-static void test_class_1(benchmark::State& state) {
-  std::vector<std::unique_ptr<Processor>> data;
-  for(int i=0; i < 10000; ++i) {
-    data.push_back(create(0));
-  }
-  for (auto _ : state) {
-    sum(data);
-  }
-}
-BENCHMARK(test_class_1);
+#define TICK_TOCK(n) \
+  static void bench_ticktock_##n(benchmark::State& state) { \
+    std::vector<std::unique_ptr<Processor>> data = generate_data(n, false); \
+    for (auto _ : state) { \
+      sum(data); \
+    } \
+  } \
+  BENCHMARK(bench_ticktock_##n);
 
-static void test_class_2(benchmark::State& state) {
-  std::vector<std::unique_ptr<Processor>> data;
-  for(int i=0; i < 10000; ++i) {
-    data.push_back(create(i % 2));
-  }
-  for (auto _ : state) {
-    sum(data);
-  }
-}
-BENCHMARK(test_class_2);
+TICK_TOCK(1)
+TICK_TOCK(2)
+TICK_TOCK(3)
+TICK_TOCK(4)
+TICK_TOCK(5)
+TICK_TOCK(6)
+TICK_TOCK(7)
+TICK_TOCK(8)
+TICK_TOCK(9)
+TICK_TOCK(10)
+TICK_TOCK(11)
+TICK_TOCK(12)
+TICK_TOCK(13)
+TICK_TOCK(14)
+TICK_TOCK(15)
+TICK_TOCK(16)
+TICK_TOCK(17)
+TICK_TOCK(18)
+TICK_TOCK(19)
+TICK_TOCK(20)
 
-static void test_class_3(benchmark::State& state) {
-  std::vector<std::unique_ptr<Processor>> data;
-  for(int i=0; i < 10000; ++i) {
-    data.push_back(create(i % 3));
-  }
-  for (auto _ : state) {
-    sum(data);
-  }
-}
-BENCHMARK(test_class_3);
+#define RANDOM(n) \
+  static void bench_random_##n(benchmark::State& state) { \
+  std::vector<std::unique_ptr<Processor> > data = generate_data(n, true); \
+  for (auto _ : state) { \
+    sum(data); \
+  } \
+} \
+BENCHMARK(bench_random_##n);
 
-static void test_class_4(benchmark::State& state) {
-  std::vector<std::unique_ptr<Processor>> data;
-  for(int i=0; i < 10000; ++i) {
-    data.push_back(create(i % 4));
-  }
-  for (auto _ : state) {
-    sum(data);
-  }
-}
-BENCHMARK(test_class_4);
-
-static void test_class_5(benchmark::State& state) {
-  std::vector<std::unique_ptr<Processor>> data;
-  for(int i=0; i < 10000; ++i) {
-    data.push_back(create(i % 5));
-  }
-  for (auto _ : state) {
-    sum(data);
-  }
-}
-BENCHMARK(test_class_5);
-
-static void test_shuffle_2(benchmark::State& state) {
-  std::vector<std::unique_ptr<Processor>> data;
-  for(int i=0; i < 10000; ++i) {
-    data.push_back(create(i % 2));
-  }
-  auto rng = std::default_random_engine {};
-  std::shuffle(std::begin(data), std::end(data), rng);
-  for (auto _ : state) {
-    sum(data);
-  }
-}
-BENCHMARK(test_shuffle_2);
-
-static void test_shuffle_3(benchmark::State& state) {
-  std::vector<std::unique_ptr<Processor>> data;
-  for(int i=0; i < 10000; ++i) {
-    data.push_back(create(i % 3));
-  }
-  auto rng = std::default_random_engine {};
-  std::shuffle(std::begin(data), std::end(data), rng);
-  for (auto _ : state) {
-    sum(data);
-  }
-}
-BENCHMARK(test_shuffle_3);
-
-static void test_shuffle_4(benchmark::State& state) {
-  std::vector<std::unique_ptr<Processor>> data;
-  for(int i=0; i < 10000; ++i) {
-    data.push_back(create(i % 4));
-  }
-  auto rng = std::default_random_engine {};
-  std::shuffle(std::begin(data), std::end(data), rng);
-  for (auto _ : state) {
-    sum(data);
-  }
-}
-BENCHMARK(test_shuffle_4);
-
-static void test_shuffle_5(benchmark::State& state) {
-  std::vector<std::unique_ptr<Processor>> data;
-  for(int i=0; i < 10000; ++i) {
-    data.push_back(create(i % 5));
-  }
-  auto rng = std::default_random_engine {};
-  std::shuffle(std::begin(data), std::end(data), rng);
-  for (auto _ : state) {
-    sum(data);
-  }
-}
-BENCHMARK(test_shuffle_5);
+RANDOM(1)
+RANDOM(2)
+RANDOM(3)
+RANDOM(4)
+RANDOM(5)
+RANDOM(6)
+RANDOM(7)
+RANDOM(8)
+RANDOM(9)
+RANDOM(10)
+RANDOM(11)
+RANDOM(12)
+RANDOM(13)
+RANDOM(14)
+RANDOM(15)
+RANDOM(16)
+RANDOM(17)
+RANDOM(18)
+RANDOM(19)
+RANDOM(20)
 
 BENCHMARK_MAIN();
