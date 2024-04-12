@@ -201,16 +201,16 @@ pub fn benchmark(c: &mut Criterion) {
   c.bench_function("dispatch sorted 24",
                    |b| b.iter(|| iter_objs(black_box(&sorted_objs))));
 
-  // Try different numbers of classes round robin
-  let mut order: [i32; 50] = core::array::from_fn(|x| x as i32);
-  let mut rng: ChaChaRng = SeedableRng::seed_from_u64(0);
-  order.shuffle(&mut rng);
-  for number_of_classes in 1..50 {
+  // Try different multiples of 50 for round robin
+  for period in 1..100 {
+    let mut order = (0..50*period).map(|x| x / period).collect::<Vec<i32>>();
+    let mut rng: ChaChaRng = SeedableRng::seed_from_u64(0);
+    order.shuffle(&mut rng);
     for i in 0..sorted_objs.len() {
-      sorted_objs[i] = processor_from_i32(order[i % number_of_classes]);
+      sorted_objs[i] = processor_from_i32(order[i % order.len()]);
     }
-    c.bench_function(format!("dispatch ticktock {number_of_classes}").as_str(),
-                     |b| b.iter(|| iter_objs(black_box(&sorted_objs))));
+    c.bench_function(format!("dispatch even {}", 50 * period).as_str(),
+                       |b| b.iter(|| iter_objs(black_box(&sorted_objs))));
   }
 
   let enums: [BigEnum; 10_000] = array.map(|x| num_traits::FromPrimitive::from_i32(x % 50)

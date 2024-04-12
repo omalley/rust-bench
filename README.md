@@ -65,7 +65,7 @@ This category tests the performance of zip relative to a loop.
 ## Tail recursion
 
 This category tests the performance of tail recursion. You can
-use the tailcall attribute to guarantee that your method is
+use the tailcall attribute to guarantee that your method is seen as
 tail recursive.
 
 **TL/DR:** Minor changes to the code have big impacts and the best
