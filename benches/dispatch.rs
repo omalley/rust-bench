@@ -7,11 +7,13 @@ use rand::SeedableRng;
 use rand::seq::SliceRandom;
 use rand_chacha::ChaChaRng;
 
+const SIZE: usize = 10_000;
+
 /// A utility function to translate the digits via a match
 fn map_digit(v: i32) -> i32 {
   match v {
     0 => 1,
-    1 => 2,
+    1 => 4,
     2 => 3,
     3 => 5,
     4 => 7,
@@ -91,7 +93,7 @@ macro_rules! define_structs {
           $([<Value $id>],)*
         }
 
-        impl BigEnum {
+        impl Processor for BigEnum {
           fn process(&self) -> i32 {
             match self {
               $(BigEnum::[<Value $id>] => $value,)*
@@ -103,7 +105,7 @@ macro_rules! define_structs {
 }
 
 // Define Processor0 to Processor23 using a macro.
-define_structs!({0, 1}, {1, 2}, {2, 3}, {3, 5},
+define_structs!({0, 1}, {1, 4}, {2, 3}, {3, 5},
   {4, 7}, {5, 11}, {6, 13}, {7, 17}, {8, 19},
   {9, 23}, {10, 25}, {11, 27}, {12, 29}, {13, 31},
   {14, 33}, {15, 35}, {16, 37}, {17, 39}, {18, 41},
@@ -125,11 +127,11 @@ enum ProcessorEnum {
   Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine,
 }
 
-impl ProcessorEnum {
+impl Processor for ProcessorEnum {
   fn process(&self) -> i32 {
     match self {
       ProcessorEnum::Zero => 1,
-      ProcessorEnum::One => 2,
+      ProcessorEnum::One => 4,
       ProcessorEnum::Two => 3,
       ProcessorEnum::Three => 5,
       ProcessorEnum::Four => 7,
@@ -142,83 +144,72 @@ impl ProcessorEnum {
   }
 }
 
-/// Test the speed going through using an enum non-virtual method.
-fn iter_enums(data: &[ProcessorEnum]) -> i32 {
-  data.iter().map(|x| x.process()).sum()
-}
-
-/// Test the speed going through using a bigger enum non-virtual method.
-fn iter_big_enums(data: &[BigEnum]) -> i32 {
-  data.iter().map(|x| x.process()).sum()
-}
-
 #[derive(FromPrimitive)]
-enum SmallEnum {
-  Value0, Value1, Value2, //Value3,
+enum Enum3 {
+  Value0, Value1, Value2,
 }
 
-impl SmallEnum {
+impl Processor for Enum3 {
   fn process(&self) -> i32 {
     match self {
-      SmallEnum::Value0 => 1,
-      SmallEnum::Value1 => 2,
-      SmallEnum::Value2 => 3,
-      //SmallEnum::Value3 => 5,
+      Enum3::Value0 => 1,
+      Enum3::Value1 => 4,
+      Enum3::Value2 => 3,
     }
   }
 }
 
-/// Test the speed going through using a bigger enum non-virtual method.
-fn iter_small_enums(data: &[SmallEnum]) -> i32 {
+fn iter_enum<T: Processor>(data: &[T]) -> i32 {
   data.iter().map(|x| x.process()).sum()
 }
 
 pub fn benchmark(c: &mut Criterion) {
-  let array: [i32; 10_000] = rust_bench::random_array(0..10, 0);
-  let lambdas: [fn() -> i32; 10] = [|| 1, || 2, || 3, || 5, || 7, || 11, || 13, || 17, || 19, || 23];
-  let objs = array
+  let array10: [i32; SIZE] = rust_bench::random_array(0..10, 0);
+  let lambdas: [fn() -> i32; 10] = [|| 1, || 4, || 3, || 5, || 7, || 11, || 13, || 17, || 19, || 23];
+  let obj10 = array10
       .map(|x| Box::new(GeneralProcessor::from(x)) as Box<dyn Processor>);
-  let enums = array
+  let enum10: [ProcessorEnum; SIZE] = array10
       .map(|x| num_traits::FromPrimitive::from_i32(x).expect("bad digit"));
-  c.bench_function("dispatch lambda", |b| b.iter(|| iter_func(black_box(&array), black_box(|i| map_digit(i)))));
-  c.bench_function("dispatch func", |b| b.iter(|| iter_func(black_box(&array), black_box(map_digit))));
-  c.bench_function("dispatch func template", |b| b.iter(|| iter_func_template(black_box(&array), black_box(map_digit))));
-  c.bench_function("dispatch lambdas", |b| b.iter(|| iter_lambdas(black_box(&array), black_box(&lambdas))));
-  c.bench_function("dispatch iter objs", |b| b.iter(|| iter_objs(black_box(&objs))));
-  c.bench_function("dispatch iter enums", |b| b.iter(|| iter_enums(black_box(&enums))));
-  // Generate 10,000 values with a wider range.
-  let array: [i32; 10_000] = rust_bench::random_array(0..100_000, 0);
-  for number_of_classes in 1..50 {
+  c.bench_function("dispatch lambda", |b| b.iter(|| iter_func(black_box(&array10), black_box(|i| map_digit(i)))));
+  c.bench_function("dispatch func", |b| b.iter(|| iter_func(black_box(&array10), black_box(map_digit))));
+  c.bench_function("dispatch func template", |b| b.iter(|| iter_func_template(black_box(&array10), black_box(map_digit))));
+  c.bench_function("dispatch lambdas", |b| b.iter(|| iter_lambdas(black_box(&array10), black_box(&lambdas))));
+  c.bench_function("dispatch iter objs", |b| b.iter(|| iter_objs(black_box(&obj10))));
+  c.bench_function("dispatch iter enums", |b| b.iter(|| iter_enum(black_box(&enum10))));
+
+  // Generate SIZE values with a wider range.
+  let big_array: [i32; SIZE] = rust_bench::random_array(0..100_000, 0);
+  for number_of_classes in (1..13).chain(50..51) {
     // Create an array with the right number of classes.
-    let tmp_objs = array
+    let random_objs = big_array
         .map(|x| processor_from_i32(x % number_of_classes));
-    c.bench_function(format!("dispatch varied {}", number_of_classes).as_str(),
-                     |b| b.iter(|| iter_objs(black_box(&tmp_objs))));
+    c.bench_function(format!("dispatch random objs {}", number_of_classes).as_str(),
+                     |b| b.iter(|| iter_objs(black_box(&random_objs))));
   }
-  let mut sorted_objs = array
-      .map(|x| processor_from_i32(x % 50));
-  sorted_objs.sort_unstable_by_key(|f| f.process());
-  c.bench_function("dispatch sorted 24",
+
+  // Generate a sorted array
+  let sorted_objs: [Box<dyn Processor>; SIZE] = core::array::from_fn(
+      |x| processor_from_i32((x / (big_array.len() / 50)) as i32));
+  c.bench_function("dispatch sorted objs 50",
                    |b| b.iter(|| iter_objs(black_box(&sorted_objs))));
 
   // Try different multiples of 50 for round robin
-  for period in 1..100 {
-    let mut order = (0..50*period).map(|x| x / period).collect::<Vec<i32>>();
+  for multiple in [1, 10, 20, 30, 40, 50, 60, 80, 100, 120, 140, 160] {
+    let mut order = (0..50*multiple).map(|x| x / multiple).collect::<Vec<i32>>();
     let mut rng: ChaChaRng = SeedableRng::seed_from_u64(0);
     order.shuffle(&mut rng);
-    for i in 0..sorted_objs.len() {
-      sorted_objs[i] = processor_from_i32(order[i % order.len()]);
-    }
-    c.bench_function(format!("dispatch even {}", 50 * period).as_str(),
-                       |b| b.iter(|| iter_objs(black_box(&sorted_objs))));
+    let random_objs: [Box<dyn Processor>; SIZE] = core::array::from_fn(
+      |x| processor_from_i32(order[x % order.len()]));
+    c.bench_function(format!("dispatch round robin objs {}", 50 * multiple).as_str(),
+                       |b| b.iter(|| iter_objs(black_box(&random_objs))));
   }
 
-  let enums: [BigEnum; 10_000] = array.map(|x| num_traits::FromPrimitive::from_i32(x % 50)
+  let enums: [BigEnum; SIZE] = big_array.map(|x| num_traits::FromPrimitive::from_i32(x % 50)
       .expect("bad value {x}"));
-  c.bench_function("dispatch iter big enums",
-                   |b| b.iter(|| iter_big_enums(black_box(&enums))));
-  let enums: [SmallEnum; 10_000] = array.map(|x| num_traits::FromPrimitive::from_i32(x % 3)
+  c.bench_function("dispatch iter enum50",
+                   |b| b.iter(|| iter_enum(black_box(&enums))));
+  let enums: [Enum3; SIZE] = big_array.map(|x| num_traits::FromPrimitive::from_i32(x % 3)
       .expect("bad value {x}"));
-  c.bench_function("dispatch iter small enums",
-                   |b| b.iter(|| iter_small_enums(black_box(&enums))));
+  c.bench_function("dispatch iter enum3",
+                   |b| b.iter(|| iter_enum(black_box(&enums))));
 }
