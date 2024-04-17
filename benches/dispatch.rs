@@ -177,6 +177,12 @@ pub fn benchmark(c: &mut Criterion) {
   c.bench_function("dispatch iter objs", |b| b.iter(|| iter_objs(black_box(&obj10))));
   c.bench_function("dispatch iter enums", |b| b.iter(|| iter_enum(black_box(&enum10))));
 
+  let obj10 = array10.map(|x| {
+      let val: ProcessorEnum = num_traits::FromPrimitive::from_i32(x).expect("bad digit");
+      Box::new(val) as Box<dyn Processor>});
+  c.bench_function("dispatch iter enums trait", |b| b.iter(|| iter_objs(black_box(&obj10))));
+
+
   // Generate SIZE values with a wider range.
   let big_array: [i32; SIZE] = rust_bench::random_array(0..100_000, 0);
   for number_of_classes in (1..13).chain(50..51) {

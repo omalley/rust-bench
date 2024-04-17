@@ -1,5 +1,6 @@
 // Copyright by Owen O'Malley 2024
 
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use criterion::{black_box, Criterion};
 
@@ -134,6 +135,38 @@ fn lookup_hashmap(data: &[i32], map: &HashMap<i32,i32>) -> i32 {
   data.iter().map(|v| map.get(v).expect("bad digit")).sum()
 }
 
+const MID: i32 = 50_000;
+
+fn cmp_bench(data: &[i32]) -> (usize, usize, usize) {
+  let mut less = 0;
+  let mut equal = 0;
+  let mut greater = 0;
+  for val in data {
+    match val.cmp(&MID) {
+      Ordering::Less => less += 1,
+      Ordering::Equal => equal += 1,
+      Ordering::Greater => greater += 1,
+    }
+  }
+  (less, equal, greater)
+}
+
+fn if_bench(data: &[i32]) -> (usize, usize, usize) {
+  let mut less = 0;
+  let mut equal = 0;
+  let mut greater = 0;
+  for val in data {
+    if *val < MID {
+      less += 1;
+    } else if *val == MID {
+      equal += 1;
+    } else {
+      greater += 1;
+    }
+  }
+  (less, equal, greater)
+}
+
 pub fn benchmark(c: &mut Criterion) {
   let array: [i32; 10_000] = rust_bench::random_array(0..10, 0);
   let trans = [1, 2, 3, 5, 7, 11, 13, 17, 19, 23];
@@ -146,4 +179,8 @@ pub fn benchmark(c: &mut Criterion) {
   c.bench_function("branching for if", |b| b.iter(|| for_if(black_box(&array))));
   c.bench_function("lookup array", |b| b.iter(|| lookup_array(black_box(&array), black_box(&trans))));
   c.bench_function("lookup hashmap", |b| b.iter(|| lookup_hashmap(black_box(&array), black_box(&map))));
+
+  let array: [i32; 10_000] = rust_bench::random_array(0..(MID * 2), 0);
+  c.bench_function("branching cmp", |b| b.iter(|| cmp_bench(black_box(&array))));
+  c.bench_function("branching if", |b| b.iter(|| if_bench(black_box(&array))));
 }

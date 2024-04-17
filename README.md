@@ -8,7 +8,7 @@ My environment currently is:
 
 * Mac OS 14.4.1
 * Apple M2 Max, 12 cores, 38 GPU (Mac14,6)
-* Rust 1.77.1
+* Rust 1.77.2
 
 As always, benchmarks run on a multi-process OS have substantial
 jitter. (Criterion does do warm ups and many iterations, but the
@@ -136,11 +136,16 @@ up in an array is 8% faster than using match.
 
 ## Dispatch
 
-This category test differnt forms of dispatching.
+This category test different forms of dispatching. I look at three variants:
+
+* Dynamic dispatch by a method accessed through a trait
+* Using an array of lambdas
+* Calling a method on an enum that uses match internally. Syntactically this
+    looks like a method, but there is no dynamic dispatch.
 
 **TL/DR:** Lambdas and dynamic dispatch are similar and both are very
-sensitive to the number of called functions (eg. 1 function = 8
-microseconds, 10 functions = 57 microseconds). Using a member function
+sensitive to the number of called functions (eg. 1 function or classes = 8
+microseconds, 10 functions or classes = 57 microseconds). Using a method
 on an enum is by far the fastest.
 
 Using a template for a passed in function is roughly 2.5x faster.
