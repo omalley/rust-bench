@@ -138,39 +138,39 @@ up in an array is 8% faster than using match.
 
 This category test different forms of dispatching. I look at three variants:
 
-* Dynamic dispatch by a method accessed through a trait
-* Using an array of lambdas
-* Calling a method on an enum that uses match internally. Syntactically this
+* Calling a method through a trait
+* Calling a lambda
+* Calling a method on an enum that branches internally. Syntactically this
     looks like a method, but there is no dynamic dispatch.
 
-**TL/DR:** Lambdas and dynamic dispatch are similar and both are very
-sensitive to the number of called functions (eg. 1 function or classes = 8
-microseconds, 10 functions or classes = 57 microseconds). Using a method
-on an enum is by far the fastest.
+**TL/DR:** Calling through a dyn trait and lambdas are similar and are
+very sensitive to the number of different functions that are called, which
+was very unexpected. For example, if the input array consists of 10,000 instances
+of the same class, it is roughly 8 microseconds. If the same array consists of
+10,000 instances of 10 classes it is 59 microseconds. Sorting the array by class
+brings it back to 9 microseconds.
+
+That behavior was totally unexpected, so I investigated further. If I pick a
+random order of lenth N * 50 with 50 different classes, each of which occurs
+N times and repeat that order to form an array of 10,000 objects, I observe
+that at N=1, we get 21 microseconds, which is significantly faster than having
+just 2 classes with a random order. Those same 50 classes with a random order
+is 62 microseconds. Surprisingly, the time stays roughly constant from N=1 until
+N=40, where the time slowly increases until it matches the random time. Note that
+this is not a Rust behavior. I see similar behavior with C++. My current hypothesis
+is that it is related to the CPU having a consistent profile of the targets of the
+indirect jump.
+
+Sorting the data by class, substantially speeds up the dispatch through the dyn
+trait.
+
+Lambdas behave very similarly to dispatching through a dyn trait and are also
+sensitive to the number of functions that are called.
+
+Although the enum method looks similar and even implements the trait, it is much much
+faster than dispatching through a dyn trait.
 
 Using a template for a passed in function is roughly 2.5x faster.
-
-Since the number of classes in the list controls the performance, so radically,
-I wondered what the curve looked like as you add more classes. I defined 24
-classes (using Rust's macros) and tested the same function with different numbers
-of distinct classes.
-
-| Distinct classes | Microseconds |
-| ---------------- | ------------ |
-| 1                | 8            |
-| 2                | 39           |
-| 3                | 47           |
-| 4                | 52           |
-| 5                | 54           |
-| 6                | 55           |
-| 7                | 57           |
-| 8, 11, 17, 18    | 58           |
-| 9, 10, 12 to 16  | 59           |
-| 19, 22           | 60           |
-| 20, 21, 23, 24   | 61           |
-
-On the other hand, sorting the data results in 24 classes
-running in 8.6 microseconds.
 
 * single
   * dispatch lambda         time:   [8.2992 µs 8.3237 µs 8.3515 µs]
