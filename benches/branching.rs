@@ -173,7 +173,7 @@ pub fn benchmark(c: &mut Criterion) {
   let map = HashMap::from([(0,1), (1, 2), (2, 3), (3, 5), (4, 7), (5, 11),
     (6, 13), (7, 17), (8, 19), (9, 23)]);
   c.bench_function("branching iter match", |b| b.iter(|| iter_match(black_box(&array))));
-  c.bench_function("branching iter match result", |b| b.iter(|| iter_match_result(black_box(&array))));
+  c.bench_function("branching match result", |b| b.iter(|| iter_match_result(black_box(&array))));
   c.bench_function("branching for match", |b| b.iter(|| for_match(black_box(&array))));
   c.bench_function("branching iter if", |b| b.iter(|| iter_if(black_box(&array))));
   c.bench_function("branching for if", |b| b.iter(|| for_if(black_box(&array))));

@@ -122,6 +122,16 @@ fn iter_objs(data: &[Box<dyn Processor>]) -> i32 {
   data.iter().map(|v| v.process()).sum()
 }
 
+/// Use a template to inline the method call.
+fn template_objs<T: Processor>(data: &[T]) -> i32 {
+  data.iter().map(|v| v.process()).sum()
+}
+
+/// Test the impact of wrapping the objects with Box in a template.
+fn template_box_objs<T: Processor>(data: &[Box<T>]) -> i32 {
+  data.iter().map(|v| v.process()).sum()
+}
+
 #[derive(FromPrimitive)]
 enum ProcessorEnum {
   Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine,
@@ -166,26 +176,40 @@ fn iter_enum<T: Processor>(data: &[T]) -> i32 {
 pub fn benchmark(c: &mut Criterion) {
   let array10: [i32; SIZE] = rust_bench::random_array(0..10, 0);
   let lambdas: [fn() -> i32; 10] = [|| 1, || 4, || 3, || 5, || 7, || 11, || 13, || 17, || 19, || 23];
-  let obj10 = array10
-      .map(|x| Box::new(GeneralProcessor::from(x)) as Box<dyn Processor>);
-  let enum10: [ProcessorEnum; SIZE] = array10
-      .map(|x| num_traits::FromPrimitive::from_i32(x).expect("bad digit"));
+
+  // Single functions
   c.bench_function("dispatch lambda", |b| b.iter(|| iter_func(black_box(&array10), black_box(|i| map_digit(i)))));
   c.bench_function("dispatch func", |b| b.iter(|| iter_func(black_box(&array10), black_box(map_digit))));
   c.bench_function("dispatch func template", |b| b.iter(|| iter_func_template(black_box(&array10), black_box(map_digit))));
+
+  // Multiple functions
   c.bench_function("dispatch lambdas", |b| b.iter(|| iter_lambdas(black_box(&array10), black_box(&lambdas))));
-  c.bench_function("dispatch iter objs", |b| b.iter(|| iter_objs(black_box(&obj10))));
-  c.bench_function("dispatch iter enums", |b| b.iter(|| iter_enum(black_box(&enum10))));
-
-  let obj10 = array10.map(|x| {
-      let val: ProcessorEnum = num_traits::FromPrimitive::from_i32(x).expect("bad digit");
-      Box::new(val) as Box<dyn Processor>});
-  c.bench_function("dispatch iter enums trait", |b| b.iter(|| iter_objs(black_box(&obj10))));
-
+  let mut array10 = array10;
+  array10.sort_unstable();
+  c.bench_function("dispatch sort lambdas", |b| b.iter(|| iter_lambdas(black_box(&array10), black_box(&lambdas))));
+  let obj10= array10.map(|x| GeneralProcessor::from(x));
+  c.bench_function("dispatch template objs", |b| b.iter(|| template_objs(&obj10)));
+  let obj10= array10.map(|x| Box::new(GeneralProcessor::from(x)));
+  c.bench_function("dispatch template box objs", |b| b.iter(|| template_box_objs(&obj10)));
 
   // Generate SIZE values with a wider range.
   let big_array: [i32; SIZE] = rust_bench::random_array(0..100_000, 0);
-  for number_of_classes in (1..13).chain(50..51) {
+
+  // Try different sized enums
+  let enums: [Enum3; SIZE] = big_array.map(|x| num_traits::FromPrimitive::from_i32(x % 3)
+      .expect("bad value {x}"));
+  c.bench_function("dispatch enum 3",
+                   |b| b.iter(|| iter_enum(black_box(&enums))));
+  let enums: [ProcessorEnum; SIZE] = big_array
+      .map(|x| num_traits::FromPrimitive::from_i32(x % 10).expect("bad digit"));
+  c.bench_function("dispatch enum 10", |b| b.iter(|| iter_enum(black_box(&enums))));
+  let enums: [BigEnum; SIZE] = big_array.map(|x| num_traits::FromPrimitive::from_i32(x % 50)
+      .expect("bad value {x}"));
+  c.bench_function("dispatch enum 50",
+                   |b| b.iter(|| iter_enum(black_box(&enums))));
+
+  // Try different numbers of classes with random distributions
+  for number_of_classes in (1..=12).chain(50..=50) {
     // Create an array with the right number of classes.
     let random_objs = big_array
         .map(|x| processor_from_i32(x % number_of_classes));
@@ -206,16 +230,7 @@ pub fn benchmark(c: &mut Criterion) {
     order.shuffle(&mut rng);
     let random_objs: [Box<dyn Processor>; SIZE] = core::array::from_fn(
       |x| processor_from_i32(order[x % order.len()]));
-    c.bench_function(format!("dispatch round robin objs {}", 50 * multiple).as_str(),
+    c.bench_function(format!("dispatch rndrn objs {}", multiple).as_str(),
                        |b| b.iter(|| iter_objs(black_box(&random_objs))));
   }
-
-  let enums: [BigEnum; SIZE] = big_array.map(|x| num_traits::FromPrimitive::from_i32(x % 50)
-      .expect("bad value {x}"));
-  c.bench_function("dispatch iter enum50",
-                   |b| b.iter(|| iter_enum(black_box(&enums))));
-  let enums: [Enum3; SIZE] = big_array.map(|x| num_traits::FromPrimitive::from_i32(x % 3)
-      .expect("bad value {x}"));
-  c.bench_function("dispatch iter enum3",
-                   |b| b.iter(|| iter_enum(black_box(&enums))));
 }
