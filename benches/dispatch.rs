@@ -11,7 +11,6 @@
 //! * Calling a method on an enum that branches internally.
 //!
 //! # Results:
-//!
 //! 1. Methods called through a trait are the same as lambdas and both are
 //!     indirect jumps.
 //! 1. Methods on enums are much faster, because they don't have an indirect
@@ -153,14 +152,14 @@ macro_rules! define_structs {
 
         // Define the equivalent enum
         #[derive(FromPrimitive)]
-        enum BigEnum {
+        pub enum Enum50 {
           $([<Value $id>],)*
         }
 
-        impl Processor for BigEnum {
+        impl Processor for Enum50 {
           fn process(&self) -> i32 {
             match self {
-              $(BigEnum::[<Value $id>] => $value,)*
+              $(Enum50::[<Value $id>] => $value,)*
             }
           }
         }
@@ -168,7 +167,7 @@ macro_rules! define_structs {
     }
 }
 
-// Define Processor0 to Processor49 and BigEnum.
+// Define Processor0 to Processor49 and Enum50.
 define_structs!({0, 1}, {1, 4}, {2, 3}, {3, 5},
   {4, 7}, {5, 11}, {6, 13}, {7, 17}, {8, 19},
   {9, 23}, {10, 25}, {11, 27}, {12, 29}, {13, 31},
@@ -307,7 +306,7 @@ pub fn benchmark(c: &mut Criterion) {
   let enums: [Enum10; SIZE] = big_array
       .map(|x| num_traits::FromPrimitive::from_i32(x % 10).expect("bad digit"));
   c.bench_function("dispatch enum 10", |b| b.iter(|| template_objs(black_box(&enums))));
-  let enums: [BigEnum; SIZE] = big_array.map(|x| num_traits::FromPrimitive::from_i32(x % 50)
+  let enums: [Enum50; SIZE] = big_array.map(|x| num_traits::FromPrimitive::from_i32(x % 50)
       .expect("bad value {x}"));
   c.bench_function("dispatch enum 50",
                    |b| b.iter(|| template_objs(black_box(&enums))));
